@@ -1,7 +1,6 @@
 # Kubeojo
 
-**TODO: Add description**
-
+kubeojo backend. Under development and experimentat atm.
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
