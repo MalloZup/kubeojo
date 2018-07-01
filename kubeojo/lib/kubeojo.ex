@@ -20,9 +20,15 @@ defmodule Kubeojo do
   # This test failed, just like its previous run.
   # REGRESSION
   # This test has been running OK, but now it failed.
+  def get_credentials do
+    user = "opensuse"
+    pwd = "yourpwd" 
+    [user, pwd] 
+  end
+
+
   def login do
-    user = "fixme"
-    pwd = "fixme"
+    [user, pwd]  = get_credentials()
     headers = ["Authorization": "#{user} #{pwd}", "Accept": "Application/json; Charset=utf-8"]
     url = "https://ci.suse.de/view/Manager/view/Manager-3.1/job/manager-3.1-cucumber/3045/testReport/api/json"
     options = [ssl: [{:versions, [:'tlsv1.2']}], recv_timeout: 50000]
