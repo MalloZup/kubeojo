@@ -1,45 +1,31 @@
 defmodule Kubeojo do
-  require HTTPoison
-  @moduledoc """
-  Documentation for Kubeojo.
-  """
-  @doc """
-  Hello world.
+  use Application
 
-  ## Examples
+  # See http://elixir-lang.org/docs/stable/elixir/Application.html
+  # for more information on OTP Applications
+  def start(_type, _args) do
+    import Supervisor.Spec
 
-      iex> Kubeojo.hello
-      :world
+    # Define workers and child supervisors to be supervised
+    children = [
+      # Start the Ecto repository
+      supervisor(Kubeojo.Repo, []),
+      # Start the endpoint when the application starts
+      supervisor(Kubeojo.Endpoint, []),
+      # Start your own worker by calling: Kubeojo.Worker.start_link(arg1, arg2, arg3)
+      # worker(Kubeojo.Worker, [arg1, arg2, arg3]),
+    ]
 
-  """
-  # jenkins specific:
-  # 
-  # we need to consider failed and regression as valid states for counting.
-  # 
-  # FAILED
-  # This test failed, just like its previous run.
-  # REGRESSION
-  # This test has been running OK, but now it failed.
-  def get_credentials do
-    user = "opensuse"
-    pwd = "yourpwd" 
-    [user, pwd] 
+    # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
+    # for other strategies and supported options
+    opts = [strategy: :one_for_one, name: Kubeojo.Supervisor]
+    Supervisor.start_link(children, opts)
   end
 
-
-  def login do
-    [user, pwd]  = get_credentials()
-    headers = ["Authorization": "#{user} #{pwd}", "Accept": "Application/json; Charset=utf-8"]
-    url = "https://ci.suse.de/view/Manager/view/Manager-3.1/job/manager-3.1-cucumber/3045/testReport/api/json"
-    options = [ssl: [{:versions, [:'tlsv1.2']}], recv_timeout: 50000]
-    case HTTPoison.get(url, headers, options) do
-      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-        # extract in body the status and the testname
-        IO.puts body
-      {:ok, %HTTPoison.Response{status_code: 404}} ->
-        IO.puts "Not found :("
-      {:error, %HTTPoison.Error{reason: reason}} ->
-        IO.inspect reason
-    end
+  # Tell Phoenix to update the endpoint configuration
+  # whenever the application is updated.
+  def config_change(changed, _new, removed) do
+    Kubeojo.Endpoint.config_change(changed, removed)
+    :ok
   end
 end
