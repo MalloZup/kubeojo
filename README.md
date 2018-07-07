@@ -11,6 +11,10 @@ storing the results and  visualizing the "brittle tests" help to detect this tes
 
 Kubeojo will track and visualize this tests with phoenix and D3.js.
 
+### Contributors:
+
+Thanks to all (contributors)[https://github.com/MalloZup/kubeojo/graphs/contributors] for kubeojo! 
+
 
 ## Roadmap:
 
