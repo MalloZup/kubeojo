@@ -1,5 +1,9 @@
 # kubeojo
 
+# What is kubeojo explained with screenshots.
+
+[Demo](/help/README.md)
+
 # What is kubeojo?
 
 Each project nowdays have a testsuite that is running on CI for ensure it stability.
