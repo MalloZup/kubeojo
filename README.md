@@ -13,8 +13,7 @@ Kubeojo will track and visualize this tests with phoenix and D3.js.
 
 ### Contributors:
 
-Thanks to all (contributors)[https://github.com/MalloZup/kubeojo/graphs/contributors] for kubeojo! 
-
+Thanks to all [contributors](https://github.com/MalloZup/kubeojo/graphs/contributors) for kubeojo! 
 
 ## Roadmap:
 
@@ -29,7 +28,6 @@ Thanks to all (contributors)[https://github.com/MalloZup/kubeojo/graphs/contribu
 - be able to store other format of tests. (define format)
 - ...
 
-
 ## How to contribute:
 
 At moment the project is in a beta stage ( not much inside), but you can discuss the roadmap and feel free to add ideas about which graphs we could use.
@@ -37,4 +35,3 @@ At moment the project is in a beta stage ( not much inside), but you can discuss
 Also any kind of idea/contribution is welcome, feel free to open issue for any kind of discussion related.
 
 Feel free to take a look on issues  (which are filtered for getting started).
-
