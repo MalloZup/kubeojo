@@ -1,8 +1,6 @@
 # kubeojo
 
-# What is kubeojo explained with screenshots.
-
-[Demo](/help/README.md)
+# [What is kubeojo in 10 seconds](/help/README.md)
 
 # What is kubeojo?
 
