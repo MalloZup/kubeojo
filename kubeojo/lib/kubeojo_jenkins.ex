@@ -1,4 +1,4 @@
-defmodule Kubeojo do
+defmodule KubeojoJenkins do
   require HTTPoison
   @moduledoc """
   Documentation for Kubeojo.
@@ -22,8 +22,8 @@ defmodule Kubeojo do
   # This test has been running OK, but now it failed.
   def get_credentials do
     user = "opensuse"
-    pwd = "yourpwd" 
-    [user, pwd] 
+    pwd = "yourpwd"
+    [user, pwd]
   end
 
 
