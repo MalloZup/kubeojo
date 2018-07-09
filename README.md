@@ -31,6 +31,8 @@ password: "2faidfakjfdkjadf30ff"
 
 2) Jenkins Jobs you want to analyze.
 
+`kubeojo/kubeojo/config/jenkins_jobs.yml`
+
 Insert here the jobs name you want to analyze the tests-results.
 
 **Important**: your jobs need to export tests in **junit-format**, so that kubeojo can fetch the junit_results.
@@ -38,12 +40,6 @@ Insert here the jobs name you want to analyze the tests-results.
 ```ỳaml
 jenkins_jobs: ["manager-3.1-cucumber", "manager-Head-cucumber"]
 ```
-
-`kubeojo/kubeojo/config/jenkins_jobs.yml`
-
-### Contributors:
-
-Thanks to all [contributors](https://github.com/MalloZup/kubeojo/graphs/contributors) for kubeojo! 
 
 ## Roadmap:
 
@@ -53,10 +49,9 @@ Thanks to all [contributors](https://github.com/MalloZup/kubeojo/graphs/contribu
 - visulilze results with D3.js: https://bl.ocks.org/mbostock/7607535.
 - deploy the app via container
 
-### Version 2:
+# Contributors:
 
-- be able to store other format of tests. (define format)
-- ...
+Thanks to all [contributors](https://github.com/MalloZup/kubeojo/graphs/contributors) for kubeojo! 
 
 ## How to contribute:
 
@@ -65,3 +60,4 @@ At moment the project is in a beta stage ( not much inside), but you can discuss
 Also any kind of idea/contribution is welcome, feel free to open issue for any kind of discussion related.
 
 Feel free to take a look on issues  (which are filtered for getting started).
+
