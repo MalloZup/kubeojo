@@ -48,12 +48,14 @@ defmodule Kubeojo.Jenkins do
 
   defp all_builds_numbers_job(job_name) do
     headers = set_headers_with_credentials()
-    url = "#{jenkins_url_yaml()}/job/#{job_name}/testReport/api/json"
-
+    url = "#{jenkins_url_yaml()}/job/#{job_name}/api/json"
+    IO.puts(url)
+    IO.puts("====")
+    ## TODO: think to refactor this clause with the duplicata one
     case HTTPoison.get(url, headers, @options) do
       {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
         # TODO: extract in body the status and the testname
-        IO.puts(body)
+        IO.inspect(body)
 
       {:ok, %HTTPoison.Response{status_code: 404}} ->
         IO.puts("Not found :(")
