@@ -15,8 +15,7 @@ defmodule Kubeojo.Jenkins do
   # This test has been running OK, but now it failed.
   #
   @root_dir File.cwd!()
-  # TODO: research about recv_timeout
-  @options [ssl: [{:versions, [:"tlsv1.2"]}], recv_timeout: 50000]
+  @options [ssl: [{:versions, [:"tlsv1.2"]}], recv_timeout: 5000]
 
   def credentials_yaml do
     [config | _] = :yamerl_constr.file("#{@root_dir}/config/jenkins_credentials.yml")
@@ -55,7 +54,7 @@ defmodule Kubeojo.Jenkins do
     case HTTPoison.get(url, headers, @options) do
       {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
         # TODO: extract in body the status and the testname
-        IO.inspect(body)
+        IO.puts body |> Poison.decode!
 
       {:ok, %HTTPoison.Response{status_code: 404}} ->
         IO.puts("Not found :(")
