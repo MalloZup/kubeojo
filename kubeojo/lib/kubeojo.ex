@@ -11,7 +11,7 @@ defmodule Kubeojo do
       # Start the Ecto repository
       supervisor(Kubeojo.Repo, []),
       # Start the endpoint when the application starts
-      supervisor(Kubeojo.Endpoint, []),
+      supervisor(Kubeojo.Endpoint, [])
       # Start your own worker by calling: Kubeojo.Worker.start_link(arg1, arg2, arg3)
       # worker(Kubeojo.Worker, [arg1, arg2, arg3]),
     ]
