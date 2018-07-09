@@ -13,6 +13,34 @@ storing the results and  visualizing the "brittle tests" help to detect this tes
 
 Kubeojo will track and visualize this tests with phoenix and D3.js.
 
+
+
+# Configuration:
+
+In order to use kubeojo, you need to have 2 yaml files configured.
+
+1) Jenkins credentials.
+`kubeojo/kubeojo/config/jenkins_credentials.yml`
+
+as password you can use the a Jenkins Token.
+```yaml
+jenkins_url: "https://4ci.suse.de/"
+username: "Jenkins_username"
+password: "2faidfakjfdkjadf30ff"
+```
+
+2) Jenkins Jobs you want to analyze.
+
+Insert here the jobs name you want to analyze the tests-results.
+
+**Important**: your jobs need to export tests in **junit-format**, so that kubeojo can fetch the junit_results.
+
+```ỳaml
+jenkins_jobs: ["manager-3.1-cucumber", "manager-Head-cucumber"]
+```
+
+`kubeojo/kubeojo/config/jenkins_jobs.yml`
+
 ### Contributors:
 
 Thanks to all [contributors](https://github.com/MalloZup/kubeojo/graphs/contributors) for kubeojo! 

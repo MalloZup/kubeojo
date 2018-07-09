@@ -19,7 +19,7 @@ defmodule Kubeojo.Mixfile do
   def application do
     [mod: {Kubeojo, []},
      applications: [:phoenix, :phoenix_pubsub, :phoenix_html, :cowboy, :logger, :gettext,
-                    :phoenix_ecto, :postgrex]]
+                    :phoenix_ecto, :postgrex, :yamerl, :httpoison]]
   end
 
   # Specifies which paths to compile per environment.
@@ -38,7 +38,9 @@ defmodule Kubeojo.Mixfile do
      {:phoenix_live_reload, "~> 1.0", only: :dev},
      {:gettext, "~> 0.11"},
      {:cowboy, "~> 1.0"},
-     {:httpoison, "~> 1.0"}]
+     # Jenkins_fetcher dep
+     {:httpoison, "~> 1.0"},
+     {:yamerl, "~> 0.4.0"}]
   end
 
   # Aliases are shortcuts or tasks specific to the current project.
