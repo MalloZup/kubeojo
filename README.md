@@ -1,4 +1,4 @@
-<p align="center"><img src="https://s33.postimg.cc/b106fo2gf/LOGO_KUBEOJO_Readme.jpg"></p>
+<p align="center"><img src="help/logo/logo_official.png"></p>
 
 # What is kubeojo?
 
@@ -60,4 +60,4 @@ Also any kind of idea/contribution is welcome, feel free to open issue for any k
 Feel free to take a look on issues  (which are filtered for getting started).
 
 
-<p align="center"><img src="https://s33.postimg.cc/9977kuqu7/LOGO_KUBEOJO_2_Readme.jpg"></p>
+<p align="center"><img src="help/logo/logo_small_official.jpg"></p>
