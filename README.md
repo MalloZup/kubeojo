@@ -60,4 +60,4 @@ Also any kind of idea/contribution is welcome, feel free to open issue for any k
 Feel free to take a look on issues  (which are filtered for getting started).
 
 
-<p align="center"><img src="help/logo/logo_small_official.jpg"></p>
+<p align="center"><img src="help/logo/logo_small_official.png"></p>
