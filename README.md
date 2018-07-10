@@ -1,6 +1,4 @@
-# kubeojo
-
-# [What is kubeojo in 10 seconds](/help/README.md)
+<p align="center"><img src="https://s33.postimg.cc/b106fo2gf/LOGO_KUBEOJO_Readme.jpg"></p>
 
 # What is kubeojo?
 
@@ -61,3 +59,5 @@ Also any kind of idea/contribution is welcome, feel free to open issue for any k
 
 Feel free to take a look on issues  (which are filtered for getting started).
 
+
+<p align="center"><img src="https://s33.postimg.cc/9977kuqu7/LOGO_KUBEOJO_2_Readme.jpg"></p>
