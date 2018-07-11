@@ -26,8 +26,7 @@ defmodule Kubeojo.Jenkins do
 
   defp jenkins_url_yaml do
     [config | _] = :yamerl_constr.file("#{@root_dir}/config/jenkins_credentials.yml")
-    jenkins_url = :proplists.get_value('jenkins_url', config) |> List.to_string()
-    [jenkins_url]
+    :proplists.get_value('jenkins_url', config) |> List.to_string()
   end
 
   defp jenkins_jobs_yaml do
@@ -40,27 +39,23 @@ defmodule Kubeojo.Jenkins do
   #
 
   def all_builds_numbers_jobs do
-    Enum.each(jenkins_jobs_yaml(), fn job ->
-      all_builds_numbers_job(job)
+    Enum.each(jenkins_jobs_yaml(), fn jobname ->
+      all_builds_numbers_from_jobname(jobname) 
+      |> build_results_raw
+      |> Poison.decode!
+      |> IO.inspect
     end)
   end
 
-  defp all_builds_numbers_job(job_name) do
+  defp all_builds_numbers_from_jobname(job_name) do
     headers = set_headers_with_credentials()
     url = "#{jenkins_url_yaml()}/job/#{job_name}/api/json"
-    IO.puts(url)
-    IO.puts("====")
-    ## TODO: think to refactor this clause with the duplicata one
     case HTTPoison.get(url, headers, @options) do
       {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-        # TODO: extract in body the status and the testname
-        IO.puts body |> Poison.decode!
-
-      {:ok, %HTTPoison.Response{status_code: 404}} ->
-        IO.puts("Not found :(")
-
-      {:error, %HTTPoison.Error{reason: reason}} ->
-        IO.inspect(reason)
+        body_dec = body |> Poison.decode!
+        builds = get_in(body_dec,  ["builds"]) 
+        # manager-31-jenkins, [20, 304, 404] # jobname builds_number
+        %{name: job_name, numbers: Enum.map(builds, fn (x) -> x["number"] end)}
     end
   end
 
@@ -70,24 +65,16 @@ defmodule Kubeojo.Jenkins do
   end
 
   # this is only for 1 build
-  def build_results_raw do
+  def build_results_raw(job) do
     headers = set_headers_with_credentials()
-    # TODO: remove the hardcoded number and job
-    build_n = "3101"
-    job_name = "manager-3.1-cucumber"
-
-    url = "#{jenkins_url_yaml()}/job/#{job_name}/#{build_n}/testReport/api/json"
-
-    case HTTPoison.get(url, headers, @options) do
-      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-        # TODO: extract in body the status and the testname
-        IO.puts(body)
-
-      {:ok, %HTTPoison.Response{status_code: 404}} ->
-        IO.puts("Not found :(")
-
-      {:error, %HTTPoison.Error{reason: reason}} ->
-        IO.inspect(reason)
-    end
+    Enum.each(job.numbers, fn number -> 
+      url = "#{jenkins_url_yaml()}/job/#{job.name}/#{number}/testReport/api/json"
+      case HTTPoison.get(url, headers, @options) do
+        {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+          body |> Poison.decode! |> IO.inspect
+      end
+      # TODO: skip if build is currently running no results
+      case 
+    end)
   end
 end
