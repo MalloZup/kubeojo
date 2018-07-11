@@ -1,5 +1,7 @@
 <p align="center"><img src="help/logo/logo_official.png"></p>
 
+# [what is kubeojo in 10sec](help/README.md)
+
 # What is kubeojo?
 
 Each project nowdays have a testsuite that is running on CI for ensure it stability.
