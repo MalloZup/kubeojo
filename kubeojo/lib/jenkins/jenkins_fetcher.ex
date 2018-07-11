@@ -34,16 +34,10 @@ defmodule Kubeojo.Jenkins do
     :proplists.get_value('jenkins_jobs', config)
   end
 
-  #
-  # build/jobs ops
-  #
-
   def all_builds_numbers_jobs do
     Enum.each(jenkins_jobs_yaml(), fn jobname ->
       all_builds_numbers_from_jobname(jobname) 
       |> build_results_raw
-      |> Poison.decode!
-      |> IO.inspect
     end)
   end
 
@@ -65,16 +59,16 @@ defmodule Kubeojo.Jenkins do
   end
 
   # this is only for 1 build
-  def build_results_raw(job) do
+  defp build_results_raw(job) do
     headers = set_headers_with_credentials()
     Enum.each(job.numbers, fn number -> 
       url = "#{jenkins_url_yaml()}/job/#{job.name}/#{number}/testReport/api/json"
       case HTTPoison.get(url, headers, @options) do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
           body |> Poison.decode! |> IO.inspect
+        {:ok, %HTTPoison.Response{status_code: 404}} ->
+          IO.puts "-> testsrusults notfound--> skipping"
       end
-      # TODO: skip if build is currently running no results
-      case 
     end)
   end
 end
