@@ -1,2 +1,2 @@
 ---
-jenkins_jobs: ["manager-3.1-cucumber", "manager-Head-cucumber"]
+jenkins_jobs: ["manager-3.1-cucumber", "manager-Head-cucumber", "manager-products-pipeline-saltstack-integration-sles12sp3"]

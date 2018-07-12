@@ -28,23 +28,31 @@ defmodule Kubeojo.Jenkins do
  end
 
   defmodule JunitParser do
-    def status_and_name(%{"suites" => suites}) do
+    def name_and_status(%{"suites" => suites}) do
       status = get_in(suites, [Access.all(), "cases", Access.all(), "status"]) |> List.flatten
       name = get_in(suites, [Access.all(), "cases", Access.all(), "name"]) |> List.flatten
-      status_and_name = Enum.zip(name, status) |> Enum.into(%{})
-      for  {k, v}  <- status_and_name do
-          IO.puts "#{k} --> #{v}"
+      Enum.zip(name, status) |> Enum.into(%{})
+    end
+
+    # get a map{name:status} only regression and failed tests.
+    # this will be stored in db.
+    #  when the list is empty testsuite was green or no-results. (ignore empty)
+    def failed_only(name_and_status) do 
+      handle_result = fn
+        {test_name, "REGRESSION"} -> test_name
+        {test_name, "FAILED"} -> test_name
+        {_, _} -> nil 
       end
+      Enum.map(name_and_status, handle_result) 
+      |>  Enum.reject(fn(t) -> t == nil end)
     end
   end
-@options [ssl: [{:versions, [:"tlsv1.2"]}], recv_timeout: 5000]
-  # Jenkins
-  # FAILED
-  # This test failed, just like its previous run.
-  # REGRESSION
+  
+  @options [ssl: [{:versions, [:"tlsv1.2"]}], recv_timeout: 5000]
   # This is the function which will retrive the testname and if failed
     def all_builds_numbers_jobs do
       Enum.each(Yaml.jenkins_jobs(), fn jobname ->
+        IO.puts ("#{jobname}\n")
         all_builds_numbers_from_jobname(jobname)
         |> build_results_raw
       end)
@@ -76,12 +84,15 @@ defmodule Kubeojo.Jenkins do
     Enum.each(job.numbers, fn number ->
       url = "#{Yaml.jenkins_url()}/job/#{job.name}/#{number}/testReport/api/json"
 
+      IO.puts ("------------#{job.name}#{number}------------")
       case HTTPoison.get(url, headers, @options) do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-          body |> Poison.decode!() |> JunitParser.status_and_name
+          # FIXME: REMOVE IO.inspect for debugging
+          body |> Poison.decode!() |> JunitParser.name_and_status |> JunitParser.failed_only |> IO.inspect
         {:ok, %HTTPoison.Response{status_code: 404}} ->
           IO.puts("-> testsrusults notfound--> skipping")
       end
+      IO.puts ("")
     end)
   end
 end
