@@ -4,7 +4,8 @@ defmodule Kubeojo.Jenkins do
   @moduledoc """
   Kubeojo.Jenkins retrive tests-failures.
   """
-
+  # TODO: remove all debug stuff
+  # TODO: for a jobname (all jobnumber are inside), count how many times failes a test-name. (this will be than put in DB)
   # yaml operations (read credentials)
   defmodule Yaml do
     @root_dir File.cwd!()
