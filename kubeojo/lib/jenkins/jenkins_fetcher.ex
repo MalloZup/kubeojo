@@ -5,16 +5,6 @@ defmodule Kubeojo.Jenkins do
   Kubeojo.Jenkins retrive tests-failures.
   """
 
-  # jenkins specific:
-  # 
-  # we need to consider failed and regression as valid states for counting.
-  # 
-  # FAILED
-  # This test failed, just like its previous run.
-  # REGRESSION
-  # This test has been running OK, but now it failed.
-  #
-
   # yaml operations (read credentials)
   defmodule Yaml do
     @root_dir File.cwd!()
@@ -37,14 +27,32 @@ defmodule Kubeojo.Jenkins do
 
  end
 
+  defmodule JunitParser do
+    def status_and_name(%{"suites" => suites}) do
+      status = get_in(suites, [Access.all(), "cases", Access.all(), "status"]) |> List.flatten
+      name = get_in(suites, [Access.all(), "cases", Access.all(), "name"]) |> List.flatten
+      status_and_name = Enum.zip(name, status) |> Enum.into(%{})
+      for  {k, v}  <- status_and_name do
+          IO.puts "#{k} --> #{v}"
+      end
+    end
+  end
 @options [ssl: [{:versions, [:"tlsv1.2"]}], recv_timeout: 5000]
- def all_builds_numbers_jobs do
+  # Jenkins
+  # FAILED
+  # This test failed, just like its previous run.
+  # REGRESSION
+  # This is the function which will retrive the testname and if failed
+    def all_builds_numbers_jobs do
       Enum.each(Yaml.jenkins_jobs(), fn jobname ->
         all_builds_numbers_from_jobname(jobname)
         |> build_results_raw
       end)
     end
-  
+
+  # from yaml builds return filtered map:
+  # %{jobname, [job_numbers]}
+  # manager-31-jenkins, [20, 304, 404] # jobname builds_number
   defp all_builds_numbers_from_jobname(job_name) do
     headers = set_headers_with_credentials()
     url = "#{Yaml.jenkins_url()}/job/#{job_name}/api/json"
@@ -53,7 +61,6 @@ defmodule Kubeojo.Jenkins do
       {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
         body_dec = body |> Poison.decode!()
         builds = get_in(body_dec, ["builds"])
-        # manager-31-jenkins, [20, 304, 404] # jobname builds_number
         %{name: job_name, numbers: Enum.map(builds, fn x -> x["number"] end)}
     end
   end
@@ -71,8 +78,7 @@ defmodule Kubeojo.Jenkins do
 
       case HTTPoison.get(url, headers, @options) do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-          body |> Poison.decode!() |> IO.inspect()
-
+          body |> Poison.decode!() |> JunitParser.status_and_name
         {:ok, %HTTPoison.Response{status_code: 404}} ->
           IO.puts("-> testsrusults notfound--> skipping")
       end
