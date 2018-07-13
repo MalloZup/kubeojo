@@ -38,13 +38,13 @@ defmodule Kubeojo.Jenkins do
     # get a map{name:status} only regression and failed tests.
     # this will be stored in db.
     #  when the list is empty testsuite was green or no-results. (ignore empty)
-    def failed_only(name_and_status) do 
+    def failed_only(testname_and_status) do 
       handle_result = fn
         {test_name, "REGRESSION"} -> test_name
         {test_name, "FAILED"} -> test_name
         {_, _} -> nil 
       end
-      Enum.map(name_and_status, handle_result) 
+      Enum.map(testname_and_status, handle_result) 
       |>  Enum.reject(fn(t) -> t == nil end)
     end
   end
@@ -76,6 +76,11 @@ defmodule Kubeojo.Jenkins do
   defp set_headers_with_credentials do
     [:ok, user, pwd] = Yaml.credentials()
     [Authorization: "#{user} #{pwd}", Accept: "Application/json; Charset=utf-8"]
+  end
+
+
+  # jobnumber timestamp.
+  defp jobname_timestamp(job_name, number)
   end
 
   # return %{jobnumber: number, testsname: failed_testname}
