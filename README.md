@@ -24,7 +24,7 @@ In order to use kubeojo, you need to have 2 yaml files configured.
 
 as password you can use the a Jenkins Token.
 ```yaml
-jenkins_url: "https://4ci.suse.de/"
+jenkins_url: "https://i_love_opensuse.ci.com/"
 username: "Jenkins_username"
 password: "2faidfakjfdkjadf30ff"
 ```
