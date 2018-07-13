@@ -48,7 +48,8 @@ defmodule Kubeojo.Jenkins do
       |>  Enum.reject(fn(t) -> t == nil end)
     end
   end
-  
+
+
   @options [ssl: [{:versions, [:"tlsv1.2"]}], recv_timeout: 5000]
   # This is the function which will retrive the testname and if failed
     def all_builds_numbers_jobs do
@@ -63,9 +64,8 @@ defmodule Kubeojo.Jenkins do
   # %{jobname, [job_numbers]}
   # manager-31-jenkins, [20, 304, 404] # jobname builds_number
   defp all_builds_numbers_from_jobname(job_name) do
-    headers = set_headers_with_credentials()
     url = "#{Yaml.jenkins_url()}/job/#{job_name}/api/json"
-
+    headers = set_headers_with_credentials()
     case HTTPoison.get(url, headers, @options) do
       {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
         builds = body |> Poison.decode!() |> get_in(["builds"])
@@ -73,22 +73,30 @@ defmodule Kubeojo.Jenkins do
     end
   end
 
-  defp set_headers_with_credentials do
-    [:ok, user, pwd] = Yaml.credentials()
-    [Authorization: "#{user} #{pwd}", Accept: "Application/json; Charset=utf-8"]
-  end
+   defp set_headers_with_credentials do
+     [:ok, user, pwd] = Yaml.credentials()
+      [Authorization: "#{user} #{pwd}", Accept: "Application/json; Charset=utf-8"]
+   end
 
 
   # jobnumber timestamp.
-  defp jobname_timestamp(job_name, number)
+ defp jobname_timestamp(job_name, number) do
+   url = "#{Yaml.jenkins_url()}/job/#{job_name}/#{number}/testReport/api/json?tree=timestamp"
+    headers = set_headers_with_credentials()
+    case HTTPoison.get(url, headers, @options) do
+      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+        body |> Poison.decode!() |> IO.inspect
+      {:ok, %HTTPoison.Response{status_code: 404}} ->
+        IO.puts("-> testsrusults notfound--> skipping")
+    end
   end
 
   # return %{jobnumber: number, testsname: failed_testname}
   defp tests_failed_pro_jobname(job) do
     headers = set_headers_with_credentials()
-
     tests_failed = Enum.map(job.numbers, fn number ->
       url = "#{Yaml.jenkins_url()}/job/#{job.name}/#{number}/testReport/api/json"
+      jobname_timestamp(job.name, number)
       case HTTPoison.get(url, headers, @options) do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
           failed_testname = body |> Poison.decode!() |> JunitParser.name_and_status |> JunitParser.failed_only
