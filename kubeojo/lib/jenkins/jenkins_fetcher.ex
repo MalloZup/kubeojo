@@ -52,11 +52,11 @@ defmodule Kubeojo.Jenkins do
   @options [ssl: [{:versions, [:"tlsv1.2"]}], recv_timeout: 5000]
   # This is the function which will retrive the testname and if failed
     def all_builds_numbers_jobs do
-      Enum.each(Yaml.jenkins_jobs(), fn jobname ->
-        IO.puts ("#{jobname}\n")
-        all_builds_numbers_from_jobname(jobname)
-        |> build_results_raw
+      all_job = Enum.map(Yaml.jenkins_jobs(), fn jobname ->
+        buildn_number_andtest = all_builds_numbers_from_jobname(jobname) |> tests_failed_pro_jobname
+        %{jobname: jobname, failures: buildn_number_andtest}
       end)
+      IO.inspect all_job
     end
 
   # from yaml builds return filtered map:
@@ -68,8 +68,7 @@ defmodule Kubeojo.Jenkins do
 
     case HTTPoison.get(url, headers, @options) do
       {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-        body_dec = body |> Poison.decode!()
-        builds = get_in(body_dec, ["builds"])
+        builds = body |> Poison.decode!() |> get_in(["builds"])
         %{name: job_name, numbers: Enum.map(builds, fn x -> x["number"] end)}
     end
   end
@@ -79,21 +78,21 @@ defmodule Kubeojo.Jenkins do
     [Authorization: "#{user} #{pwd}", Accept: "Application/json; Charset=utf-8"]
   end
 
-  defp build_results_raw(job) do
+  # return %{jobnumber: number, testsname: failed_testname}
+  defp tests_failed_pro_jobname(job) do
     headers = set_headers_with_credentials()
 
-    Enum.each(job.numbers, fn number ->
+    tests_failed = Enum.map(job.numbers, fn number ->
       url = "#{Yaml.jenkins_url()}/job/#{job.name}/#{number}/testReport/api/json"
-
-      IO.puts ("------------#{job.name}#{number}------------")
       case HTTPoison.get(url, headers, @options) do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-          # FIXME: REMOVE IO.inspect for debugging
-          body |> Poison.decode!() |> JunitParser.name_and_status |> JunitParser.failed_only |> IO.inspect
+          failed_testname = body |> Poison.decode!() |> JunitParser.name_and_status |> JunitParser.failed_only
+          %{jobnumber: number, testsname: failed_testname}
         {:ok, %HTTPoison.Response{status_code: 404}} ->
-          IO.puts("-> testsrusults notfound--> skipping")
+         IO.puts("-> testsrusults notfound--> skipping")
       end
-      IO.puts ("")
     end)
+    # the puts function is adding the :ok
+    tests_failed |> Enum.reject(fn(t) -> t == :ok end)
   end
 end
