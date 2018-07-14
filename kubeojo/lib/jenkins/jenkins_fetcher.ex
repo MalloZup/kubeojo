@@ -4,8 +4,6 @@ defmodule Kubeojo.Jenkins do
   @moduledoc """
   Kubeojo.Jenkins retrive tests-failures.
   """
-  # TODO: remove all debug stuff
-  # TODO: for a jobname (all jobnumber are inside), count how many times failes a test-name. (this will be than put in DB)
   # yaml operations (read credentials)
   defmodule Yaml do
     @root_dir File.cwd!()
@@ -34,9 +32,7 @@ defmodule Kubeojo.Jenkins do
       Enum.zip(name, status) |> Enum.into(%{})
     end
 
-    # get a map{name:status} only regression and failed tests.
-    # this will be stored in db.
-    #  when the list is empty testsuite was green or no-results. (ignore empty)
+    # from results filter and keep only failed tests 
     def failed_only(testname_and_status) do
       handle_result = fn
         {test_name, "REGRESSION"} -> test_name
@@ -50,18 +46,13 @@ defmodule Kubeojo.Jenkins do
   end
 
   @options [ssl: [{:versions, [:"tlsv1.2"]}], recv_timeout: 5000]
-  # This is the function which will retrive the testname and if failed
-  def all_builds_numbers_jobs do
-    all_job =
+  def all_retrieve_map_failure_and_testsname do
       Enum.map(Yaml.jenkins_jobs(), fn jobname ->
-        buildn_number_andtest =
+        build_number_andtest =
           all_builds_numbers_from_jobname(jobname) |> tests_failed_pro_jobname
 
-        %{jobname: jobname, failures: buildn_number_andtest}
+        %{jobname: jobname, failures: build_number_andtest}
       end)
-
-    # TODO: REMOVE THIS
-    IO.inspect(all_job)
   end
 
   # from yaml builds return filtered map:
@@ -83,11 +74,9 @@ defmodule Kubeojo.Jenkins do
     [Authorization: "#{user} #{pwd}", Accept: "Application/json; Charset=utf-8"]
   end
 
-  # jobnumber timestamp.
   defp jobname_timestamp(job_name, number) do
     url = "#{Yaml.jenkins_url()}/job/#{job_name}/#{number}/api/json?tree=timestamp"
     headers = set_headers_with_credentials()
-    # %{"_class" => "hudson.model.FreeStyleBuild", "timestamp" => 1531513633155}
     build_timestamp =
       case HTTPoison.get(url, headers, @options) do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
@@ -125,7 +114,14 @@ defmodule Kubeojo.Jenkins do
         end
       end)
 
-    # the puts function is adding the :ok
+    # the clause 404 is adding :ok in map
     tests_failed |> Enum.reject(fn t -> t == :ok end)
+  end
+
+  defp AllFailures do
+    jenk_data = all_retrieve_map_failure_and_testsname()
+    Enum.map(jenk_data, fn jobs ->
+      get_in(jobs, [:failures, Access.all(), :testsname])
+    end)
   end
 end
