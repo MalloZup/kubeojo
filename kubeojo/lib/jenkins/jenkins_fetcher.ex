@@ -47,12 +47,11 @@ defmodule Kubeojo.Jenkins do
 
   @options [ssl: [{:versions, [:"tlsv1.2"]}], recv_timeout: 5000]
   def all_retrieve_map_failure_and_testsname do
-      Enum.map(Yaml.jenkins_jobs(), fn jobname ->
-        build_number_andtest =
-          all_builds_numbers_from_jobname(jobname) |> tests_failed_pro_jobname
+    Enum.map(Yaml.jenkins_jobs(), fn jobname ->
+      build_number_andtest = all_builds_numbers_from_jobname(jobname) |> tests_failed_pro_jobname
 
-        %{jobname: jobname, failures: build_number_andtest}
-      end)
+      %{jobname: jobname, failures: build_number_andtest}
+    end)
   end
 
   # from yaml builds return filtered map:
@@ -77,6 +76,7 @@ defmodule Kubeojo.Jenkins do
   defp jobname_timestamp(job_name, number) do
     url = "#{Yaml.jenkins_url()}/job/#{job_name}/#{number}/api/json?tree=timestamp"
     headers = set_headers_with_credentials()
+
     build_timestamp =
       case HTTPoison.get(url, headers, @options) do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
@@ -118,8 +118,9 @@ defmodule Kubeojo.Jenkins do
     tests_failed |> Enum.reject(fn t -> t == :ok end)
   end
 
-  defp AllFailures do
+  defp allFailures do
     jenk_data = all_retrieve_map_failure_and_testsname()
+
     Enum.map(jenk_data, fn jobs ->
       get_in(jobs, [:failures, Access.all(), :testsname])
     end)
