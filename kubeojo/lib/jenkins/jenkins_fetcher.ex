@@ -118,7 +118,7 @@ defmodule Kubeojo.Jenkins do
     tests_failed |> Enum.reject(fn t -> t == :ok end)
   end
 
-  defp allFailures do
+  defp _allFailures do
     jenk_data = all_retrieve_map_failure_and_testsname()
 
     Enum.map(jenk_data, fn jobs ->
