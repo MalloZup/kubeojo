@@ -4,7 +4,7 @@ defmodule Kubeojo.TestsFailures do
   schema "tests_failures" do
 
     field :testname, :string
-    field :number_time_failed, :integer
+    field :count_failed, :integer
     field :build_timestamp, :integer
     field :jobname, :string
     field :jobnumber, :integer

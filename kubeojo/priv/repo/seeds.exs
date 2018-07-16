@@ -9,3 +9,9 @@
 #
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
+#
+#
+alias Kubeojo.TestsFailures
+alias Kubeojo.Repo
+
+Repo.insert(%TestsFailures{testname: "foo", count_failed: 1,  build_timestamp: 1233122, jobname: "foo", jobnumber: 23123})
