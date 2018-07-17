@@ -1,5 +1,6 @@
 defmodule Kubeojo.Jenkins do
   require HTTPoison
+  import Ecto.Query
 
   @moduledoc """
   Kubeojo.Jenkins retrive tests-failures.
@@ -48,9 +49,7 @@ defmodule Kubeojo.Jenkins do
   @options [ssl: [{:versions, [:"tlsv1.2"]}], recv_timeout: 5000]
   def all_retrieve_map_failure_and_testsname do
     Enum.map(Yaml.jenkins_jobs(), fn jobname ->
-      build_number_andtest = all_builds_numbers_from_jobname(jobname) |> tests_failed_pro_jobname
-
-      %{jobname: jobname, failures: build_number_andtest}
+      all_builds_numbers_from_jobname(jobname) |> tests_failed_pro_jobname
     end)
   end
 
@@ -106,9 +105,11 @@ defmodule Kubeojo.Jenkins do
               |> Poison.decode!()
               |> JunitParser.name_and_status()
               |> JunitParser.failed_only()
-
-            %{jobnumber: number, testsname: failed_testname, build_timestamp: build_timestamp}
-
+              # TODO: check if there is already data (failed_test) and increment it by one
+              # insert new data( job is not there
+              Kubeojo.Repo.insert(%Kubeojo.TestsFailures
+                            {testname: failed_testname, count_failed: 1,  build_timestamp: build_timestamp, jobname: job.name, jobnumber: number})
+            
           {:ok, %HTTPoison.Response{status_code: 404}} ->
             IO.puts("-> testsrusults notfound--> skipping")
         end
@@ -118,11 +119,4 @@ defmodule Kubeojo.Jenkins do
     tests_failed |> Enum.reject(fn t -> t == :ok end)
   end
 
-  defp _allFailures do
-    jenk_data = all_retrieve_map_failure_and_testsname()
-
-    Enum.map(jenk_data, fn jobs ->
-      get_in(jobs, [:failures, Access.all(), :testsname])
-    end)
-  end
 end
