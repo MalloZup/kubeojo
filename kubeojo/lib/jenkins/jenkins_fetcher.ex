@@ -93,10 +93,11 @@ defmodule Kubeojo.Jenkins do
     IO.puts("already in database increase count")
   end
 
-  defp jobname_database(false, failed_testname, build_timestamp, job_name, number) do
-
+  defp jobname_database(false, failed_testnames, build_timestamp, job_name, number) do
+    Enum.each(failed_testnames, fn(failed_testname) ->
      Kubeojo.Repo.insert(%Kubeojo.TestsFailures
-                   {testname: failed_testname, count_failed: 1,  build_timestamp: build_timestamp, jobname: job.name, jobnumber: number})
+        {testname: failed_testname, count_failed: 1,  build_timestamp: build_timestamp, jobname: "#{job_name}", jobnumber: number})
+    end)
   end
   # return %{jobnumber: number, testsname: failed_testname}
   defp tests_failed_pro_jobname(job) do
@@ -109,7 +110,7 @@ defmodule Kubeojo.Jenkins do
 
         case HTTPoison.get(url, headers, @options) do
           {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-            failed_testname =
+            failed_testnames =
               body
               |> Poison.decode!()
               |> JunitParser.name_and_status()
@@ -117,7 +118,8 @@ defmodule Kubeojo.Jenkins do
                query = from j in "tests_failures",
                                   select: j.jobname
               jobnames_db = Kubeojo.Repo.all(query)
-              jobname_database(Enum.member?(jobnames_db, job.name), failed_testname)
+              IO.puts(failed_testnames)
+              jobname_database(Enum.member?(jobnames_db, job.name), failed_testnames, build_timestamp, job.name, number)
           {:ok, %HTTPoison.Response{status_code: 404}} ->
             IO.puts("-> testsrusults notfound--> skipping")
         end
