@@ -13,11 +13,18 @@
 #
 alias Kubeojo.TestsFailures
 alias Kubeojo.Repo
-
+import Ecto.Query
 jenk_data =  Kubeojo.Jenkins.all_retrieve_map_failure_and_testsname
 
-# 1) check if jobname exist already
+# Send the query to the repository
 
+Enum.each(jenk_data, fn(jobs) ->
+  query = from j in "tests_failures",
+           where: like(j.jobname,^jobs.jobname),
+           select: j.jobname
+  IO.puts Repo.all(query)
+end)
+# 1) check if jobname exist already
 # 2) check if jobname has already jobnumber and build_timestamp
 
 
