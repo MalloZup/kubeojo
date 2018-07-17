@@ -1,7 +1,7 @@
 defmodule Kubeojo.Jenkins do
   require HTTPoison
   import Ecto.Query
-
+  
   @moduledoc """
   Kubeojo.Jenkins retrive tests-failures.
   """
@@ -46,7 +46,7 @@ defmodule Kubeojo.Jenkins do
     end
   end
 
-  @options [ssl: [{:versions, [:"tlsv1.2"]}], recv_timeout: 5000]
+  @options [ssl: [{:versions, [:"tlsv1.2"]}], recv_timeout: 50000]
   def all_retrieve_map_failure_and_testsname do
     Enum.map(Yaml.jenkins_jobs(), fn jobname ->
       all_builds_numbers_from_jobname(jobname) |> tests_failed_pro_jobname
@@ -89,6 +89,15 @@ defmodule Kubeojo.Jenkins do
     build_timestamp
   end
 
+  defp jobname_database(true, _failed_testname, _build_timestamp, _job_name, _number) do
+    IO.puts("already in database increase count")
+  end
+
+  defp jobname_database(false, failed_testname, build_timestamp, job_name, number) do
+
+     Kubeojo.Repo.insert(%Kubeojo.TestsFailures
+                   {testname: failed_testname, count_failed: 1,  build_timestamp: build_timestamp, jobname: job.name, jobnumber: number})
+  end
   # return %{jobnumber: number, testsname: failed_testname}
   defp tests_failed_pro_jobname(job) do
     headers = set_headers_with_credentials()
@@ -105,11 +114,10 @@ defmodule Kubeojo.Jenkins do
               |> Poison.decode!()
               |> JunitParser.name_and_status()
               |> JunitParser.failed_only()
-              # TODO: check if there is already data (failed_test) and increment it by one
-              # insert new data( job is not there
-              Kubeojo.Repo.insert(%Kubeojo.TestsFailures
-                            {testname: failed_testname, count_failed: 1,  build_timestamp: build_timestamp, jobname: job.name, jobnumber: number})
-            
+               query = from j in "tests_failures",
+                                  select: j.jobname
+              jobnames_db = Kubeojo.Repo.all(query)
+              jobname_database(Enum.member?(jobnames_db, job.name), failed_testname)
           {:ok, %HTTPoison.Response{status_code: 404}} ->
             IO.puts("-> testsrusults notfound--> skipping")
         end
