@@ -5,7 +5,7 @@
 # How to run kubeojo
 
 At this point kubeojo is under the dev. phase not 1.0 version, as soon a version is ready i will update the doc for running kubeojo.
-
+( you can still pick up issues from GitHub if you want to contribute for 1.0 version) 
 # What is kubeojo?
 
 Each project nowdays have a testsuite that is running on CI for ensure it stability.
