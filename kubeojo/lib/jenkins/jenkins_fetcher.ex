@@ -46,7 +46,7 @@ defmodule Kubeojo.Jenkins do
     end
   end
 
-  @options [ssl: [{:versions, [:"tlsv1.2"]}], recv_timeout: 50000]
+  @options [ssl: [{:versions, [:"tlsv1.2"]}], recv_timeout: 500000]
   def all_retrieve_map_failure_and_testsname do
     Enum.map(Yaml.jenkins_jobs(), fn jobname ->
       all_builds_numbers_from_jobname(jobname) |> tests_failed_pro_jobname
@@ -90,6 +90,7 @@ defmodule Kubeojo.Jenkins do
   end
 
   defp jobname_database(true, _failed_testname, _build_timestamp, _job_name, _number) do
+    # do other check for inserting and increase count at the end
     IO.puts("already in database increase count")
   end
 
@@ -99,6 +100,11 @@ defmodule Kubeojo.Jenkins do
         {testname: failed_testname, count_failed: 1,  build_timestamp: build_timestamp, jobname: "#{job_name}", jobnumber: number})
     end)
   end
+
+  defp jobnames_from_db() do
+    from j in "tests_failures", select: j.jobname
+  end
+
   # return %{jobnumber: number, testsname: failed_testname}
   defp tests_failed_pro_jobname(job) do
     headers = set_headers_with_credentials()
@@ -115,10 +121,9 @@ defmodule Kubeojo.Jenkins do
               |> Poison.decode!()
               |> JunitParser.name_and_status()
               |> JunitParser.failed_only()
-               query = from j in "tests_failures",
-                                  select: j.jobname
-              jobnames_db = Kubeojo.Repo.all(query)
-              IO.puts(failed_testnames)
+              jobnames_db = Kubeojo.Repo.all(jobnames_from_db)
+              IO.puts jobnames_db
+              IO.puts job.name
               jobname_database(Enum.member?(jobnames_db, job.name), failed_testnames, build_timestamp, job.name, number)
           {:ok, %HTTPoison.Response{status_code: 404}} ->
             IO.puts("-> testsrusults notfound--> skipping")
