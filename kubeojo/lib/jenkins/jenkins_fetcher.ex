@@ -89,16 +89,17 @@ defmodule Kubeojo.Jenkins do
     build_timestamp
   end
 
-  defp jobname_database(_jobname, _failed_testname, _build_timestamp, _job_name, _number) do
-    # do other check for inserting and increase count at the end
-    IO.puts("already in database increase count")
-  end
-
-  defp jobname_database(nil, failed_testnames, build_timestamp, job_name, number) do
+  defp jobname_database(false, failed_testnames, build_timestamp, job_name, number) do
+    IO.puts "job not in db"
     Enum.each(failed_testnames, fn(failed_testname) ->
      Kubeojo.Repo.insert(%Kubeojo.TestsFailures
         {testname: failed_testname, count_failed: 1,  build_timestamp: build_timestamp, jobname: "#{job_name}", jobnumber: number})
     end)
+  end
+
+  defp jobname_database(true, _failed_testname, _build_timestamp, _job_name, _number) do
+    IO.puts "jobname in db"
+    # check  job number and timestamp
   end
 
   # return %{jobnumber: number, testsname: failed_testname}
@@ -118,9 +119,11 @@ defmodule Kubeojo.Jenkins do
               |> JunitParser.name_and_status()
               |> JunitParser.failed_only()
 
-              jobname_test = Kubeojo.Repo.get_by(Kubeojo.TestsFailures, jobname: "#{job.name}")
-          Task.start(fn ->jobname_database(jobname_test, failed_testnames, build_timestamp, job.name, number)end)
-
+              results =  Kubeojo.Repo.all(
+                  from t in Kubeojo.TestsFailures,
+                  select: t.jobname
+              )
+          Task.start(fn -> jobname_database(to_string(job.name) in results, failed_testnames, build_timestamp, job.name, number)end)
           {:ok, %HTTPoison.Response{status_code: 404}} ->
             IO.puts("-> testsrusults notfound--> skipping")
         end
