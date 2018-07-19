@@ -72,6 +72,9 @@ defmodule Kubeojo.Jenkins do
     [Authorization: "#{user} #{pwd}", Accept: "Application/json; Charset=utf-8"]
   end
 
+  defp insert_data_and_update_count_db(results) do
+    # check if testname is present for giving result and update count if yes
+  end
   defp jobname_timestamp(job_name, number) do
     url = "#{Yaml.jenkins_url()}/job/#{job_name}/#{number}/api/json?tree=timestamp"
     headers = set_headers_with_credentials()
@@ -97,8 +100,26 @@ defmodule Kubeojo.Jenkins do
     end)
   end
 
-  defp jobname_database(true, _failed_testname, _build_timestamp, _job_name, _number) do
+  defp jobname_database(true, _failed_testname, build_timestamp, job_name, job_number) do
     IO.puts "jobname in db"
+    results =  Kubeojo.Repo.all(
+               from t in Kubeojo.TestsFailures,
+               select: [t.testname, t.build_timestamp, t.jobnumber, t.jobname]
+             )
+    IO.inspect results
+
+    check_job_number_build_timestamp = fn 
+      {testnames, true, true, true} -> IO.inspect testnames # here data is duplicata -> skip
+      {testnames, false, false, false} -> IO.puts "INSERT DATA and update count" 
+      {testnames, false, false, true} -> IO.puts "INSERT DATA and update count" 
+      {testnames, false, true, true} -> IO.puts "INSERT DATA and update count"
+      {testnames, _, _, _} -> IO.puts "unhandled case atm :)" end 
+    end 
+
+    check_job_number_build_timestamp(results[0], 
+                                     to_string(build_timestamp) in results[1],
+                                     to_string(job_number) in results[2],
+                                     to_string(job_name) in results[3])
     # check  job number and timestamp
   end
 
