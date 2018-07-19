@@ -119,7 +119,7 @@ defmodule Kubeojo.Jenkins do
               |> JunitParser.failed_only()
 
               jobname_test = Kubeojo.Repo.get_by(Kubeojo.TestsFailures, jobname: "#{job.name}")
-              spawn_link jobname_database(jobname_test, failed_testnames, build_timestamp, job.name, number)
+          Task.start(fn ->jobname_database(jobname_test, failed_testnames, build_timestamp, job.name, number)end)
 
           {:ok, %HTTPoison.Response{status_code: 404}} ->
             IO.puts("-> testsrusults notfound--> skipping")
