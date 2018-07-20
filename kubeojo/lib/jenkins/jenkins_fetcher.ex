@@ -111,7 +111,7 @@ defmodule Kubeojo.Jenkins do
     db_jobnumber =   Kubeojo.Repo.all( from(t in Kubeojo.TestsFailures, select: t.jobnumber))
 
     # check if we have already results stored
-    # TODO revisit this :D
+    # TODO recheck this :D
     # TODO don't update the count of tests_failure in the current schema. 
     check_job_number_build_timestamp = fn
       {_, true, true, true} -> IO.puts "testname already present"
@@ -149,7 +149,7 @@ defmodule Kubeojo.Jenkins do
               Kubeojo.Repo.all(
                 from(t in Kubeojo.TestsFailures, select: t.jobname )
               )
-
+            # write or not data to db
             Task.start(fn -> jobname_database(to_string(job.name) in jobnames_db, failed_testnames, build_timestamp, job.name, number) end)
 
           {:ok, %HTTPoison.Response{status_code: 404}} ->
@@ -160,4 +160,17 @@ defmodule Kubeojo.Jenkins do
     # the clause 404 is adding :ok in map
     tests_failed |> Enum.reject(fn t -> t == :ok end)
   end
+
+  def count_testfailures_pro_jobname do
+    # FIXME:  iterate over jobsname remove hardcoded one
+    jobname = "manager-products-pipeline-saltstack-integration-sles12sp3"
+    data = Kubeojo.Repo.all( from(t in Kubeojo.TestsFailures, 
+                                  where: t.jobname == ^jobname,
+                                  select: %{timestamp: t.build_timestamp, jobnumber: t.jobnumber, testname: t.testname}))
+    Enum.map(data, fn(j) -> 
+      count = Enum.count(data, fn(n) -> n.testname == j.testname end)
+      {String.to_atom(to_string(j.testname)), count}
+    end)
+  end
+
 end
