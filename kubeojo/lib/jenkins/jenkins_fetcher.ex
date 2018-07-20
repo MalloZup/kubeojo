@@ -1,12 +1,4 @@
-defmodule Kubeojo.Jenkins do
-  require HTTPoison
-  import Ecto.Query
-
-  @moduledoc """
-  Kubeojo.Jenkins retrive tests-failures.
-  """
-  # yaml operations (read credentials)
-  defmodule Yaml do
+defmodule Kubeojo.Yaml do
     @root_dir File.cwd!()
     def credentials do
       [config | _] = :yamerl_constr.file("#{@root_dir}/config/jenkins_credentials.yml")
@@ -24,8 +16,16 @@ defmodule Kubeojo.Jenkins do
       [config | _] = :yamerl_constr.file("#{@root_dir}/config/jenkins_jobs.yml")
       :proplists.get_value('jenkins_jobs', config)
     end
-  end
+end
 
+
+defmodule Kubeojo.Jenkins do
+  require HTTPoison
+  import Ecto.Query
+
+  @moduledoc """
+  Kubeojo.Jenkins retrive tests-failures.
+  """
   defmodule JunitParser do
     def name_and_status(%{"suites" => suites}) do
       status = get_in(suites, [Access.all(), "cases", Access.all(), "status"]) |> List.flatten()
@@ -48,7 +48,7 @@ defmodule Kubeojo.Jenkins do
 
   @options [ssl: [{:versions, [:"tlsv1.2"]}], recv_timeout: 500_000]
   def all_retrieve_map_failure_and_testsname do
-    Enum.map(Yaml.jenkins_jobs(), fn jobname ->
+    Enum.map(Kubeojo.Yaml.jenkins_jobs(), fn jobname ->
       all_builds_numbers_from_jobname(jobname) |> tests_failed_pro_jobname
     end)
   end
@@ -57,7 +57,7 @@ defmodule Kubeojo.Jenkins do
   # %{jobname, [job_numbers]}
   # manager-31-jenkins, [20, 304, 404] # jobname builds_number
   defp all_builds_numbers_from_jobname(job_name) do
-    url = "#{Yaml.jenkins_url()}/job/#{job_name}/api/json"
+    url = "#{Kubeojo.Yaml.jenkins_url()}/job/#{job_name}/api/json"
     headers = set_headers_with_credentials()
 
     case HTTPoison.get(url, headers, @options) do
@@ -68,12 +68,12 @@ defmodule Kubeojo.Jenkins do
   end
 
   defp set_headers_with_credentials do
-    [:ok, user, pwd] = Yaml.credentials()
+    [:ok, user, pwd] = Kubeojo.Yaml.credentials()
     [Authorization: "#{user} #{pwd}", Accept: "Application/json; Charset=utf-8"]
   end
 
   defp jobname_timestamp(job_name, number) do
-    url = "#{Yaml.jenkins_url()}/job/#{job_name}/#{number}/api/json?tree=timestamp"
+    url = "#{Kubeojo.Yaml.jenkins_url()}/job/#{job_name}/#{number}/api/json?tree=timestamp"
     headers = set_headers_with_credentials()
 
     build_timestamp =
@@ -90,7 +90,7 @@ defmodule Kubeojo.Jenkins do
   end
 
   # write data to db
-  defp insert_new_tests_failures(failed_testnames) do
+  defp insert_new_tests_failures(failed_testnames, build_timestamp, job_name, number) do
     Enum.each(failed_testnames, fn failed_testname ->
       Kubeojo.Repo.insert(%Kubeojo.TestsFailures{
         testname: failed_testname,
@@ -102,26 +102,20 @@ defmodule Kubeojo.Jenkins do
     end)
   end
 
-  defp insert_tests_failures(failed_testnames) do
-    # TODO: handle case where testname exists and we need to increment it
-
-    # this is the case where no testname exist yet
-    insert_new_tests_failures(failed_testnames)
+  defp update_tests_failures(_failed_testnames, _count) do
+    # get and incremnt count of failures
   end
 
   defp jobname_database(false, failed_testnames, build_timestamp, job_name, number) do
-    IO.puts("job not in db")
-    insert_tests_failures(failed_testnames)
+    insert_new_tests_failures(failed_testnames, build_timestamp, job_name, number)
   end
-
-  defp jobname_database(true, _failed_testname, build_timestamp, job_name, job_number) do
-    IO.puts("jobname in db")
-
+  # jobname is in database
+  defp jobname_database(true, _failed_testnames, build_timestamp, job_name, job_number) do
     results =
       Kubeojo.Repo.all(
         from(
           t in Kubeojo.TestsFailures,
-          select: [t.testname, t.build_timestamp, t.jobnumber, t.jobname]
+          select: [t.testname, t.build_timestamp, t.jobnumber, t.jobname, t.count_failed]
         )
       )
 
@@ -129,27 +123,25 @@ defmodule Kubeojo.Jenkins do
     # check if we have already results stored
     check_job_number_build_timestamp = fn
       # here data is duplicata -> skip
-      {testnames, true, true, true} ->
-        IO.inspect(testnames)
+      {testnames, true, true, true, _} -> IO.inspect(testnames)
 
-      {testnames, false, false, false} ->
-        IO.puts("INSERT DATA and update count")
+      {testnames, false, false, false, _} -> insert_new_tests_failures(testnames, build_timestamp, job_name, job_number)
 
-      {testnames, false, false, true} ->
-        IO.puts("INSERT DATA and update count")
+      {testnames, false, false, true, _} ->  insert_new_tests_failures(testnames, build_timestamp, job_name, job_number)
 
-      {testnames, false, true, true} ->
-        IO.puts("INSERT DATA and update count")
+      {testnames, false, true, true, count} ->   update_tests_failures(testnames, count)
 
-      {testnames, _, _, _} ->
+      {_, _, _, _, _} ->
+
         IO.puts("unhandled case atm :)")
     end
 
-    check_job_number_build_timestamp(
+    check_job_number_build_timestamp.(
       results[0],
-      to_string(build_timestamp) in results[1],
+      #  to_string(build_timestamp) in results[1],
       to_string(job_number) in results[2],
-      to_string(job_name) in results[3]
+      to_string(job_name) in results[3],
+      results[4]
     )
   end
 
@@ -159,7 +151,7 @@ defmodule Kubeojo.Jenkins do
 
     tests_failed =
       Enum.map(job.numbers, fn number ->
-        url = "#{Yaml.jenkins_url()}/job/#{job.name}/#{number}/testReport/api/json"
+        url = "#{Kubeojo.Yaml.jenkins_url()}/job/#{job.name}/#{number}/testReport/api/json"
         build_timestamp = jobname_timestamp(job.name, number)
 
         case HTTPoison.get(url, headers, @options) do
@@ -170,23 +162,12 @@ defmodule Kubeojo.Jenkins do
               |> JunitParser.name_and_status()
               |> JunitParser.failed_only()
 
-            results =
+            jobnames_db =
               Kubeojo.Repo.all(
-                from(
-                  t in Kubeojo.TestsFailures,
-                  select: t.jobname
-                )
+                from(t in Kubeojo.TestsFailures, select: t.jobname )
               )
 
-            Task.start(fn ->
-              jobname_database(
-                to_string(job.name) in results,
-                failed_testnames,
-                build_timestamp,
-                job.name,
-                number
-              )
-            end)
+            Task.start(fn -> jobname_database(to_string(job.name) in jobnames_db, failed_testnames, build_timestamp, job.name, number) end)
 
           {:ok, %HTTPoison.Response{status_code: 404}} ->
             IO.puts("-> testsrusults notfound--> skipping")
