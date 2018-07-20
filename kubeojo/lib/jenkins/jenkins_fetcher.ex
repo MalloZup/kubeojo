@@ -18,15 +18,7 @@ defmodule Kubeojo.Yaml do
     end
 end
 
-
-defmodule Kubeojo.Jenkins do
-  require HTTPoison
-  import Ecto.Query
-
-  @moduledoc """
-  Kubeojo.Jenkins retrive tests-failures.
-  """
-  defmodule JunitParser do
+defmodule JunitParser do
     def name_and_status(%{"suites" => suites}) do
       status = get_in(suites, [Access.all(), "cases", Access.all(), "status"]) |> List.flatten()
       name = get_in(suites, [Access.all(), "cases", Access.all(), "name"]) |> List.flatten()
@@ -44,8 +36,15 @@ defmodule Kubeojo.Jenkins do
       Enum.map(testname_and_status, handle_result)
       |> Enum.reject(fn t -> t == nil end)
     end
-  end
+end
 
+defmodule Kubeojo.Jenkins do
+  require HTTPoison
+  import Ecto.Query
+
+  @moduledoc """
+  Kubeojo.Jenkins retrive tests-failures.
+  """
   @options [ssl: [{:versions, [:"tlsv1.2"]}], recv_timeout: 500_000]
   def all_retrieve_map_failure_and_testsname do
     Enum.map(Kubeojo.Yaml.jenkins_jobs(), fn jobname ->
@@ -102,47 +101,32 @@ defmodule Kubeojo.Jenkins do
     end)
   end
 
-  defp update_tests_failures(_failed_testnames, _count) do
-    # get and incremnt count of failures
-  end
-
   defp jobname_database(false, failed_testnames, build_timestamp, job_name, number) do
     insert_new_tests_failures(failed_testnames, build_timestamp, job_name, number)
   end
   # jobname is in database
-  defp jobname_database(true, _failed_testnames, build_timestamp, job_name, job_number) do
-    results =
-      Kubeojo.Repo.all(
-        from(
-          t in Kubeojo.TestsFailures,
-          select: [t.testname, t.build_timestamp, t.jobnumber, t.jobname, t.count_failed]
-        )
-      )
+  defp jobname_database(true, failed_testnames, build_timestamp, job_name, job_number) do
+    db_timestamps =   Kubeojo.Repo.all( from(t in Kubeojo.TestsFailures, select: t.build_timestamp))
+    db_jobname =   Kubeojo.Repo.all( from(t in Kubeojo.TestsFailures, select: t.jobname))
+    db_jobnumber =   Kubeojo.Repo.all( from(t in Kubeojo.TestsFailures, select: t.jobnumber))
 
-    IO.inspect(results)
     # check if we have already results stored
+    # TODO revisit this :D
+    # TODO don't update the count of tests_failure in the current schema. 
     check_job_number_build_timestamp = fn
-      # here data is duplicata -> skip
-      {testnames, true, true, true, _} -> IO.inspect(testnames)
-
-      {testnames, false, false, false, _} -> insert_new_tests_failures(testnames, build_timestamp, job_name, job_number)
-
-      {testnames, false, false, true, _} ->  insert_new_tests_failures(testnames, build_timestamp, job_name, job_number)
-
-      {testnames, false, true, true, count} ->   update_tests_failures(testnames, count)
-
-      {_, _, _, _, _} ->
-
-        IO.puts("unhandled case atm :)")
+      {_, true, true, true} -> IO.puts "testname already present"
+      {testnames, false, false, false} -> insert_new_tests_failures(testnames, build_timestamp, job_name, job_number)
+      {testnames, false, false, true} ->  insert_new_tests_failures(testnames, build_timestamp, job_name, job_number)
+      {testnames, false, true, true} ->  insert_new_tests_failures(testnames, build_timestamp, job_name, job_number)
+      {_, _, _, _, _} ->   IO.puts("unhandled case atm :)")
     end
 
-    check_job_number_build_timestamp.(
-      results[0],
-      #  to_string(build_timestamp) in results[1],
-      to_string(job_number) in results[2],
-      to_string(job_name) in results[3],
-      results[4]
-    )
+    check_job_number_build_timestamp.({
+      failed_testnames,
+      build_timestamp in db_timestamps,
+      job_number in db_jobnumber,
+      to_string(job_name) in db_jobname
+    })
   end
 
   # return %{jobnumber: number, testsname: failed_testname}
@@ -153,7 +137,6 @@ defmodule Kubeojo.Jenkins do
       Enum.map(job.numbers, fn number ->
         url = "#{Kubeojo.Yaml.jenkins_url()}/job/#{job.name}/#{number}/testReport/api/json"
         build_timestamp = jobname_timestamp(job.name, number)
-
         case HTTPoison.get(url, headers, @options) do
           {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
             failed_testnames =
