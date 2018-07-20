@@ -1,7 +1,7 @@
 defmodule Kubeojo.Jenkins do
   require HTTPoison
   import Ecto.Query
-  
+
   @moduledoc """
   Kubeojo.Jenkins retrive tests-failures.
   """
@@ -46,7 +46,7 @@ defmodule Kubeojo.Jenkins do
     end
   end
 
-  @options [ssl: [{:versions, [:"tlsv1.2"]}], recv_timeout: 500000]
+  @options [ssl: [{:versions, [:"tlsv1.2"]}], recv_timeout: 500_000]
   def all_retrieve_map_failure_and_testsname do
     Enum.map(Yaml.jenkins_jobs(), fn jobname ->
       all_builds_numbers_from_jobname(jobname) |> tests_failed_pro_jobname
@@ -72,9 +72,6 @@ defmodule Kubeojo.Jenkins do
     [Authorization: "#{user} #{pwd}", Accept: "Application/json; Charset=utf-8"]
   end
 
-  defp insert_data_and_update_count_db(results) do
-    # check if testname is present for giving result and update count if yes
-  end
   defp jobname_timestamp(job_name, number) do
     url = "#{Yaml.jenkins_url()}/job/#{job_name}/#{number}/api/json?tree=timestamp"
     headers = set_headers_with_credentials()
@@ -92,35 +89,68 @@ defmodule Kubeojo.Jenkins do
     build_timestamp
   end
 
-  defp jobname_database(false, failed_testnames, build_timestamp, job_name, number) do
-    IO.puts "job not in db"
-    Enum.each(failed_testnames, fn(failed_testname) ->
-     Kubeojo.Repo.insert(%Kubeojo.TestsFailures
-        {testname: failed_testname, count_failed: 1,  build_timestamp: build_timestamp, jobname: "#{job_name}", jobnumber: number})
+  # write data to db
+  defp insert_new_tests_failures(failed_testnames) do
+    Enum.each(failed_testnames, fn failed_testname ->
+      Kubeojo.Repo.insert(%Kubeojo.TestsFailures{
+        testname: failed_testname,
+        count_failed: 1,
+        build_timestamp: build_timestamp,
+        jobname: "#{job_name}",
+        jobnumber: number
+      })
     end)
   end
 
+  defp insert_tests_failures(failed_testnames) do
+    # TODO: handle case where testname exists and we need to increment it
+
+    # this is the case where no testname exist yet
+    insert_new_tests_failures(failed_testnames)
+  end
+
+  defp jobname_database(false, failed_testnames, build_timestamp, job_name, number) do
+    IO.puts("job not in db")
+    insert_tests_failures(failed_testnames)
+  end
+
   defp jobname_database(true, _failed_testname, build_timestamp, job_name, job_number) do
-    IO.puts "jobname in db"
-    results =  Kubeojo.Repo.all(
-               from t in Kubeojo.TestsFailures,
-               select: [t.testname, t.build_timestamp, t.jobnumber, t.jobname]
-             )
-    IO.inspect results
+    IO.puts("jobname in db")
 
-    check_job_number_build_timestamp = fn 
-      {testnames, true, true, true} -> IO.inspect testnames # here data is duplicata -> skip
-      {testnames, false, false, false} -> IO.puts "INSERT DATA and update count" 
-      {testnames, false, false, true} -> IO.puts "INSERT DATA and update count" 
-      {testnames, false, true, true} -> IO.puts "INSERT DATA and update count"
-      {testnames, _, _, _} -> IO.puts "unhandled case atm :)" end 
-    end 
+    results =
+      Kubeojo.Repo.all(
+        from(
+          t in Kubeojo.TestsFailures,
+          select: [t.testname, t.build_timestamp, t.jobnumber, t.jobname]
+        )
+      )
 
-    check_job_number_build_timestamp(results[0], 
-                                     to_string(build_timestamp) in results[1],
-                                     to_string(job_number) in results[2],
-                                     to_string(job_name) in results[3])
-    # check  job number and timestamp
+    IO.inspect(results)
+    # check if we have already results stored
+    check_job_number_build_timestamp = fn
+      # here data is duplicata -> skip
+      {testnames, true, true, true} ->
+        IO.inspect(testnames)
+
+      {testnames, false, false, false} ->
+        IO.puts("INSERT DATA and update count")
+
+      {testnames, false, false, true} ->
+        IO.puts("INSERT DATA and update count")
+
+      {testnames, false, true, true} ->
+        IO.puts("INSERT DATA and update count")
+
+      {testnames, _, _, _} ->
+        IO.puts("unhandled case atm :)")
+    end
+
+    check_job_number_build_timestamp(
+      results[0],
+      to_string(build_timestamp) in results[1],
+      to_string(job_number) in results[2],
+      to_string(job_name) in results[3]
+    )
   end
 
   # return %{jobnumber: number, testsname: failed_testname}
@@ -140,11 +170,24 @@ defmodule Kubeojo.Jenkins do
               |> JunitParser.name_and_status()
               |> JunitParser.failed_only()
 
-              results =  Kubeojo.Repo.all(
-                  from t in Kubeojo.TestsFailures,
+            results =
+              Kubeojo.Repo.all(
+                from(
+                  t in Kubeojo.TestsFailures,
                   select: t.jobname
+                )
               )
-          Task.start(fn -> jobname_database(to_string(job.name) in results, failed_testnames, build_timestamp, job.name, number)end)
+
+            Task.start(fn ->
+              jobname_database(
+                to_string(job.name) in results,
+                failed_testnames,
+                build_timestamp,
+                job.name,
+                number
+              )
+            end)
+
           {:ok, %HTTPoison.Response{status_code: 404}} ->
             IO.puts("-> testsrusults notfound--> skipping")
         end
@@ -153,5 +196,4 @@ defmodule Kubeojo.Jenkins do
     # the clause 404 is adding :ok in map
     tests_failed |> Enum.reject(fn t -> t == :ok end)
   end
-
 end
