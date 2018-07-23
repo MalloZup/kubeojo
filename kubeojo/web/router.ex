@@ -1,4 +1,5 @@
 defmodule Kubeojo.Router do
+    #jenkins = Repo.all(Kubeojo.TestsFailures)
   use Kubeojo.Web, :router
 
   pipeline :browser do
@@ -15,7 +16,8 @@ defmodule Kubeojo.Router do
 
   scope "/", Kubeojo do
     pipe_through :browser # Use the default browser stack
-
+    get "/jenkins", JenkinsController, :index
+    get "/jenkins/:jobname", JenkinsController, :show
     get "/", PageController, :index
   end
 

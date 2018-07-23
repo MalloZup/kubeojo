@@ -1,0 +1,10 @@
+<h1>Listening jobnames<h1>
+
+<table class="table">
+  <%= for jobname <- @jenkins do %>
+    <tr>
+      <td><b><%= jobname %></td>
+      <td><%= link "View", to: "/jenkins:#{jobname}", method: :show %></td>
+    </tr>
+  <% end %>
+</table>  

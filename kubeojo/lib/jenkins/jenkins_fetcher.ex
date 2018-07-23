@@ -56,13 +56,10 @@ defmodule Kubeojo.Jenkins do
   # this write data to db, pro jobname and jobnumber
   def write_tests_failures_to_db do
     Enum.map(Kubeojo.Yaml.jenkins_jobs(), fn jobname ->
-      all_builds_numbers_from_jobname(jobname) |> tests_failed_pro_jobname
+      all_builds_numbers_from_jobname(jobname) |> tests_failed_pro_jobname_to_db
     end)
   end
 
-  # from yaml builds return filtered map:
-  # %{jobname, [job_numbers]}
-  # manager-31-jenkins, [20, 304, 404] # jobname builds_number
   defp all_builds_numbers_from_jobname(job_name) do
     url = "#{Kubeojo.Yaml.jenkins_url()}/job/#{job_name}/api/json"
     headers = set_headers_with_credentials()
