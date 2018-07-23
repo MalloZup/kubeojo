@@ -3,12 +3,11 @@ defmodule Kubeojo.JenkinsController do
 
   def index(conn, _params) do
     # get jobnames
-    jenkins = ["job00", "foobar", "cucumber"] 
-    render conn, "index.html", jenkins: jenkins
+    jobnames = Kubeojo.Yaml.jenkins_jobs()
+    render conn, "index.html", jenkins: jobnames
   end
   
   def show(conn, jobname) do
-    #  jobs = Repo.all(Kubeojo.Testsfailures)
     render conn, "show.html", jobs: jobname
   end
 end
