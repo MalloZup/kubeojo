@@ -4,7 +4,7 @@
   <%= for jobname <- @jenkins do %>
     <tr>
       <td><b><%= jobname %></td>
-      <td><%= link "View", to: "/jenkins:#{jobname}", method: :show %></td>
+      <td><%= link "View", to: "/jenkins/#{jobname}"%></td>
     </tr>
   <% end %>
 </table>  

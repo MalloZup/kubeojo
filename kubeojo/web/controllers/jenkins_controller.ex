@@ -6,4 +6,9 @@ defmodule Kubeojo.JenkinsController do
     jenkins = ["job00", "foobar", "cucumber"] 
     render conn, "index.html", jenkins: jenkins
   end
+  
+  def show(conn, jobname) do
+    #  jobs = Repo.all(Kubeojo.Testsfailures)
+    render conn, "show.html", jobs: jobname
+  end
 end

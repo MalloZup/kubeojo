@@ -1,0 +1,2 @@
+<h1>show jobname analyze kubeojo</h1>
+<b><%=@jobs["jobname"]%></b>

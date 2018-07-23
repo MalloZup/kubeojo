@@ -16,9 +16,10 @@ defmodule Kubeojo.Router do
 
   scope "/", Kubeojo do
     pipe_through :browser # Use the default browser stack
-    get "/jenkins", JenkinsController, :index
+    get "/", JenkinsController, :index
     get "/jenkins/:jobname", JenkinsController, :show
-    get "/", PageController, :index
+    # TODO: remove this later "/demo"
+    get "/demo", PageController, :index
   end
 
   # Other scopes may use custom stacks.
