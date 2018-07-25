@@ -28,7 +28,7 @@ defmodule Kubeojo.Jenkins.Analyze do
     end)
   end
 
-  defp testfailures_pro_jobname(jobname) do
+  def testfailures_pro_jobname(jobname) do
     data =
       Kubeojo.Repo.all(
         from(

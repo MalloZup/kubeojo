@@ -7,7 +7,8 @@ defmodule Kubeojo.JenkinsController do
     render conn, "index.html", jenkins: jobnames
   end
   
-  def show(conn, jobname) do
-    render conn, "show.html", jobs: jobname
+  def show(conn, %{"jobname" => jobname}) do
+    failures_name_and_number = Kubeojo.Jenkins.Analyze.testfailures_pro_jobname(jobname)
+    render conn, "show.html", failures: failures_name_and_number, jobname: jobname
   end
 end
