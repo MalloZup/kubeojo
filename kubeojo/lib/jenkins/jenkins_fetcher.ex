@@ -40,7 +40,7 @@ defmodule Kubeojo.Jenkins.Analyze do
 
     Enum.map(data, fn j ->
       count = Enum.count(data, fn n -> n.testname == j.testname end)
-      {String.to_atom(to_string(j.testname)), count}
+      %{name: j.testname, size: count}
     end)
   end
 end

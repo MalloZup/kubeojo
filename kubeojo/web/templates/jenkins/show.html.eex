@@ -31,7 +31,7 @@
 }
 
 </style>
-<svg width="960" height="960"></svg>
+<svg width="5000" height="5000"></svg>
 
  <script src="https://d3js.org/d3.v4.min.js"></script>
 
@@ -51,7 +51,7 @@ var pack = d3.pack()
     .size([diameter - margin, diameter - margin])
     .padding(2);
 
-d3.json("/js/flare.json", function(error, root) {
+d3.json("/js/flare2.json", function(error, root) {
   if (error) throw error;
 
   root = d3.hierarchy(root)
