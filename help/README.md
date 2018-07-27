@@ -7,15 +7,13 @@ The balls represent test-failures over a period of time.
 A big ball is something that is fragile in your product/software.
 It can be a weakness on tests-automation or a bug affecting your software.
 
-You can order your tests in sub-categories. ( here we have a hypotetical docker-testsuite)
+Kubeojo index page give you a list of wich job you want to keep track
 
 ![global](global.png)
 
-## So we can zoom to search particular failures of sub-categories.
+# How looks like a bubble chart  from kubeojo
 
 ![zoom1](zoom1.png)
-
-## We can zoom again more deeper
 
 ### Balls are changing all the time.
 
