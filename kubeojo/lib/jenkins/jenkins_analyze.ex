@@ -18,21 +18,27 @@ defmodule Kubeojo.Jenkins.Analyze do
         )
       )
 
-    duplicata_map = Enum.map(data, fn j ->
-      count = Enum.count(data, fn n -> n.testname == j.testname end)
+    duplicata_map =
+      Enum.map(data, fn j ->
+        count = Enum.count(data, fn n -> n.testname == j.testname end)
         %{j.testname => count}
-    end)
-
-    list_uniq_testnames = duplicata_map 
-                          |> Enum.map(fn y -> Map.keys(y)  end) 
-                          |> Enum.uniq()
-    # for the uniq_test_names get the uniq-count
-    uniq_count = Enum.map(list_uniq_testnames, fn(uname) ->
-      count = Enum.map(duplicata_map, fn(dmap) ->
-        dmap[to_string(uname)]
       end)
-      count |> Enum.reject(fn t -> t == nil end)  |> Enum.uniq() |> List.flatten()
-    end)
+
+    list_uniq_testnames =
+      duplicata_map
+      |> Enum.map(fn y -> Map.keys(y) end)
+      |> Enum.uniq()
+
+    # for the uniq_test_names get the uniq-count
+    uniq_count =
+      Enum.map(list_uniq_testnames, fn uname ->
+        count =
+          Enum.map(duplicata_map, fn dmap ->
+            dmap[to_string(uname)]
+          end)
+
+        count |> Enum.reject(fn t -> t == nil end) |> Enum.uniq() |> List.flatten()
+      end)
 
     Enum.zip(List.flatten(list_uniq_testnames), List.flatten(uniq_count)) |> Enum.into(%{})
   end
