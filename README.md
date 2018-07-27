@@ -23,7 +23,6 @@ storing the results and  visualizing the "brittle tests" help to detect this tes
 Kubeojo will track and visualize this tests with phoenix and D3.js.
 
 
-
 # Configuration:
 
 In order to use kubeojo, you need to have 2 yaml files configured.
@@ -52,11 +51,7 @@ jenkins_jobs: ["manager-3.1-cucumber", "manager-Head-cucumber"]
 
 ## Roadmap:
 
-### Version 1:
-
-- store jenkins junits results in database
-- visulilze results with D3.js: https://bl.ocks.org/mbostock/7607535.
-- deploy the app via container
+https://github.com/MalloZup/kubeojo/issues
 
 # Contributors:
 
