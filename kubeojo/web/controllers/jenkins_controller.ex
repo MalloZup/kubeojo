@@ -1,6 +1,5 @@
 defmodule Kubeojo.JenkinsController do
   use Kubeojo.Web, :controller
-  require CSV
    @root_dir File.cwd!()
 
   def index(conn, _params) do
