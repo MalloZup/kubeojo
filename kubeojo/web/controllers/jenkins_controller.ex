@@ -1,6 +1,7 @@
 defmodule Kubeojo.JenkinsController do
   use Kubeojo.Web, :controller
-  @root_dir File.cwd!()
+  require CSV
+   @root_dir File.cwd!()
 
   def index(conn, _params) do
     # get jobnames
