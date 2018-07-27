@@ -13,7 +13,7 @@ Kubeojo index page give you a list of wich job you want to keep track
 
 # How looks like a bubble chart  from kubeojo
 
-![zoom1](zoom1.png)
+![zoom1](zoom.png)
 
 ### Balls are changing all the time.
 
