@@ -12,9 +12,8 @@ defmodule Kubeojo.JenkinsController do
     data = Kubeojo.Jenkins.Analyze.testfailures_pro_jobname(jobname)
     csv_file = "#{@root_dir}/priv/static/js/flare.csv"
     File.write(csv_file, "title,category,views\n") 
-    Enum.each(data, fn(x) ->
-      test_name =  Map.keys(x)
-      File.write(csv_file, "#{to_string(test_name)},#{x[to_string(test_name)]},#{x[to_string(test_name)]}\n", [:append]) 
+    Enum.each(data, fn{test_name, failure} ->
+      File.write(csv_file, "#{test_name},#{failure},#{failure}\n", [:append]) 
     end)
     render conn, "show.html", failures: data, jobname: jobname
   end
