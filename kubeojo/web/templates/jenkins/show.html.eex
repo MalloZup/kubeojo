@@ -12,7 +12,7 @@
       }
       // selection.datum() returns the bound datum for the first element in the selection and 
       //  doesn't join the specified array of data with the selected elements
-      var chart = bubbleChart().width(1500).height(1500);
+      var chart = bubbleChart().width(1000).height(1000);
       d3.select('#chart').datum(data).call(chart);
     });
 
