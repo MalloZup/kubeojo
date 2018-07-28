@@ -57,13 +57,8 @@ https://github.com/MalloZup/kubeojo/issues
 
 Thanks to all [contributors](https://github.com/MalloZup/kubeojo/graphs/contributors) for kubeojo! 
 
-## How to contribute:
-
-At moment the project is in a beta stage ( not much inside), but you can discuss the roadmap and feel free to add ideas about which graphs we could use.
-
-Also any kind of idea/contribution is welcome, feel free to open issue for any kind of discussion related.
-
-Feel free to take a look on issues  (which are filtered for getting started).
+# Releasing:
+(relasing)[help/relasing.md]
 
 
 <p align="center"><img src="help/logo/logo_small_official.png"></p>

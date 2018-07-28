@@ -69,7 +69,6 @@ defmodule Kubeojo.Jenkins do
     db_jobnumber = Kubeojo.Repo.all(from(t in Kubeojo.TestsFailures, select: t.jobnumber))
 
     # check if we have already results stored
-    # TODO recheck this :D
     check_job_number_build_timestamp = fn
       {_, true, true, true} ->
         IO.puts("testname already present")

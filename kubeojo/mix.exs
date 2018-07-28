@@ -55,7 +55,9 @@ defmodule Kubeojo.Mixfile do
       {:cowboy, "~> 1.0"},
       # Jenkins_fetcher dep
       {:httpoison, "~> 1.0"},
-      {:yamerl, "~> 0.4.0"}
+      {:yamerl, "~> 0.4.0"},
+      # Quality code
+      {:credo, "~> 0.9.1", only: [:dev, :test], runtime: false}
     ]
   end
 
