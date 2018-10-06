@@ -57,7 +57,8 @@ defmodule Kubeojo.Mixfile do
       {:httpoison, "~> 1.0"},
       {:yamerl, "~> 0.4.0"},
       # Quality code
-      {:credo, "~> 0.9.1", only: [:dev, :test], runtime: false}
+      {:credo, "~> 0.9.1", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 0.5.1", only: [:dev, :test], runtime: false}
     ]
   end
 

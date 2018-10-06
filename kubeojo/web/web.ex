@@ -16,6 +16,7 @@ defmodule Kubeojo.Web do
   below.
   """
 
+  @spec model() :: {:__block__, [], [{:import, [...], [...]} | {:use, [...], [...]}, ...]}
   def model do
     quote do
       use Ecto.Schema
@@ -26,6 +27,9 @@ defmodule Kubeojo.Web do
     end
   end
 
+  @spec controller() ::
+          {:__block__, [],
+           [{:alias, [...], [...]} | {:import, [...], [...]} | {:use, [...], [...]}, ...]}
   def controller do
     quote do
       use Phoenix.Controller
@@ -39,6 +43,7 @@ defmodule Kubeojo.Web do
     end
   end
 
+  @spec view() :: {:__block__, [], [{:import, [...], [...]} | {:use, [...], [...]}, ...]}
   def view do
     quote do
       use Phoenix.View, root: "web/templates"
@@ -55,12 +60,18 @@ defmodule Kubeojo.Web do
     end
   end
 
+  @spec router() ::
+          {:use, [{:context, Kubeojo.Web} | {:import, Kernel}, ...],
+           [{:__aliases__, [...], [...]}, ...]}
   def router do
     quote do
       use Phoenix.Router
     end
   end
 
+  @spec channel() ::
+          {:__block__, [],
+           [{:alias, [...], [...]} | {:import, [...], [...]} | {:use, [...], [...]}, ...]}
   def channel do
     quote do
       use Phoenix.Channel
