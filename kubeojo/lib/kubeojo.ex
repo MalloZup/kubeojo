@@ -3,6 +3,7 @@ defmodule Kubeojo do
 
   # See http://elixir-lang.org/docs/stable/elixir/Application.html
   # for more information on OTP Applications
+  @spec start(any(), any()) :: :ignore | {:error, any()} | {:ok, pid()}
   def start(_type, _args) do
     import Supervisor.Spec
 
@@ -24,6 +25,7 @@ defmodule Kubeojo do
 
   # Tell Phoenix to update the endpoint configuration
   # whenever the application is updated.
+  @spec config_change(any(), any(), any()) :: :ok
   def config_change(changed, _new, removed) do
     Kubeojo.Endpoint.config_change(changed, removed)
     :ok

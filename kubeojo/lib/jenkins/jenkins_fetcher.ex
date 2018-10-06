@@ -7,6 +7,7 @@ defmodule Kubeojo.Jenkins do
   """
   @options [ssl: [{:versions, [:"tlsv1.2"]}], recv_timeout: 500_000]
   # this write data to db, pro jobname and jobnumber
+  @spec write_tests_failures_to_db() :: none()
   def write_tests_failures_to_db do
     Enum.map(Kubeojo.Yaml.jenkins_jobs(), fn jobname ->
       all_builds_numbers_from_jobname(jobname) |> tests_failed_pro_jobname_to_db

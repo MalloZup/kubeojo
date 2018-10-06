@@ -2,12 +2,14 @@
 defmodule Kubeojo.Jenkins.Analyze do
   import Ecto.Query
 
+  @spec count_all_testsfailures() :: none()
   def count_all_testsfailures() do
     Enum.map(Kubeojo.Yaml.jenkins_jobs(), fn jobname ->
       {String.to_atom(to_string(jobname)), testfailures_pro_jobname(jobname)}
     end)
   end
 
+  @spec testfailures_pro_jobname(any()) :: map()
   def testfailures_pro_jobname(jobname) do
     data =
       Kubeojo.Repo.all(
