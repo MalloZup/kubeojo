@@ -2,16 +2,16 @@
 
 # Elixir setup 
 
-Kubeojo is based on elixir and phoenix frameworks.
+Kubeojo is built with Elixir and the Phoenix framework.
 
-* [Install elixir](https://elixir-lang.org/install.html)
+* [Install Elixir](https://elixir-lang.org/install.html)
 
-* [configuration](https://github.com/MalloZup/kubeojo#configuration)
-   you need to configure jenkins user and jobs to be fetched.
+* [Configuration](https://github.com/MalloZup/kubeojo#configuration)
+   - you need to configure a Jenkins user and the jobs to be fetched.
 
 ## Phoenix setup
 
-You need to have postgres installed in order to develop with phoenix.
+You need to have Postgres installed in order to develop with Phoenix.
 
 
 To start your Phoenix app:
@@ -20,23 +20,21 @@ To start your Phoenix app:
   * Create and migrate your database with `mix ecto.create && mix ecto.migrate`
   
 
-## Full the database with Jenkins jobs data
+## Fill the database with Jenkins jobs data
 
-Atm you need to do :
-
-this will open a elixir shell
+Open a Elixir shell:
 ```elixir
 
 /bin/kubeojo/kubeojo$ iex -S mix
 ```
 
-execute the function to put data in db
+Execute the function to put data in the database:
 ```elixir
 Kubeojo.Jenkins.write_tests_failures_to_db
 
 ```
 
-## starting the web-framework
+## Starting the web framework
 
 * Start Phoenix endpoint with `mix phoenix.server`
 * Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
