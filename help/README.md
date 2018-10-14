@@ -1,22 +1,21 @@
-# Kubeojo explained live!
+# Kubeojo explained
 
 ## Let's have a look:
 
-The balls represent test-failures over a period of time. 
+The balls represent test failures over a period of time. 
 
-A big ball is something that is fragile in your product/software.
-It can be a weakness on tests-automation or a bug affecting your software.
+A big ball is something that is fragile in your product/software. It can be a weakness in your automated tests, or a bug affecting your software.
 
-Kubeojo index page give you a list of wich job you want to keep track
+The index page presents a list of jobs that kubeojo is tracking for you
 
 ![global](global.png)
 
-# How looks like a bubble chart  from kubeojo
+# A bubble chart visualized by kubeojo
 
 ![zoom1](zoom.png)
 
-### Balls are changing all the time.
+### Balls are changing all the time
 
-Since kubeojo will fetch testsresults overtime, the size of the balls will increase if a tests fails.
+Since kubeojo will fetch test results over time, the size of the balls will increase as tests fail.
 
 ![zoom2l](zoom2.png)
